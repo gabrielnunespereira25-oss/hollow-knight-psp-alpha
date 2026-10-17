@@ -4,7 +4,7 @@
 #include <pspgu.h>
 #include <pspctrl.h>
 
-PSP_MODULE_INFO("Dark Bot", 0, 1, 0);
+PSP_MODULE_INFO("Dark Bot Test", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
 
 #define SCREEN_W 480
@@ -23,23 +23,21 @@ int main(void)
     sceCtrlSetSamplingMode(PSP_CTRL_MODE_DIGITAL);
 
     sceGuInit();
-
     sceGuStart(GU_DIRECT, display_list);
 
     sceGuDrawBuffer(
         GU_PSM_8888, (void *)0, BUFFER_W
     );
+
     sceGuDispBuffer(
         SCREEN_W, SCREEN_H, (void *)0x88000, BUFFER_W
-    );
-    sceGuDepthBuffer(
-        (void *)0x110000, BUFFER_W
     );
 
     sceGuOffset(
         2048 - SCREEN_W / 2,
         2048 - SCREEN_H / 2
     );
+
     sceGuViewport(2048, 2048, SCREEN_W, SCREEN_H);
     sceGuScissor(0, 0, SCREEN_W, SCREEN_H);
 
@@ -57,7 +55,7 @@ int main(void)
     {
         sceGuStart(GU_DIRECT, display_list);
 
-        sceGuClearColor(0xFF202838);
+        sceGuClearColor(0xFF0000FF);
         sceGuClear(GU_COLOR_BUFFER_BIT);
 
         sceGuFinish();
