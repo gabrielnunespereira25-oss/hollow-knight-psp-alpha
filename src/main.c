@@ -7,8 +7,18 @@
 PSP_MODULE_INFO("HK Beta Menu", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
 
-int main(void) {
+#define BG_COLOR       0xFF101522
+#define TEXT_COLOR     0xFFFFFFFF
+#define SELECT_COLOR   0xFFFFD080
+#define MUTED_COLOR    0xFFAAAAAA
+
+int main(void)
+{
     pspDebugScreenInit();
+
+    pspDebugScreenSetBackColor(BG_COLOR);
+    pspDebugScreenSetTextColor(TEXT_COLOR);
+
     sceCtrlSetSamplingCycle(0);
     sceCtrlSetSamplingMode(PSP_CTRL_MODE_DIGITAL);
 
@@ -29,32 +39,40 @@ int main(void) {
         sceCtrlReadBufferPositive(&pad, 1);
 
         pspDebugScreenClear();
-        pspDebugScreenSetXY(7, 2);
-        pspDebugScreenSetTextColor(0xFFFFFFFF);
+
+        /* Cabecalho */
+        pspDebugScreenSetTextColor(MUTED_COLOR);
+        pspDebugScreenSetXY(5, 2);
+        pspDebugScreenPrintf("HALL0WNEST  /  PS202");
+
+        pspDebugScreenSetTextColor(TEXT_COLOR);
+        pspDebugScreenSetXY(7, 5);
         pspDebugScreenPrintf("HOLLOW KNIGHT");
 
-        pspDebugScreenSetXY(11, 4);
-        pspDebugScreenPrintf("BETA PSP");
+        pspDebugScreenSetTextColor(SELECT_COLOR);
+        pspDebugScreenSetXY(9, 7);
+        pspDebugScreenPrintf("- BETA EDITION -");
 
         if (tela == 0) {
+            /* Menu principal */
             for (int i = 0; i < 5; i++) {
-                pspDebugScreenSetXY(8, 8 + i * 2);
+                pspDebugScreenSetXY(8, 10 + i * 2);
 
                 if (i == selecionado) {
-                    pspDebugScreenSetTextColor(0xFF80D8FF);
-                    pspDebugScreenPrintf("> %s", opcoes[i]);
+                    pspDebugScreenSetTextColor(SELECT_COLOR);
+                    pspDebugScreenPrintf("> %s <", opcoes[i]);
                 } else {
-                    pspDebugScreenSetTextColor(0xFFFFFFFF);
+                    pspDebugScreenSetTextColor(TEXT_COLOR);
                     pspDebugScreenPrintf("  %s", opcoes[i]);
                 }
             }
 
-            pspDebugScreenSetXY(2, 20);
-            pspDebugScreenSetTextColor(0xFFAAAAAA);
-            pspDebugScreenPrintf("CIMA/BAIXO: navegar");
+            pspDebugScreenSetTextColor(MUTED_COLOR);
+            pspDebugScreenSetXY(3, 21);
+            pspDebugScreenPrintf("CIMA/BAIXO: NAVEGAR");
 
-            pspDebugScreenSetXY(2, 21);
-            pspDebugScreenPrintf("X: selecionar | START: sair");
+            pspDebugScreenSetXY(3, 22);
+            pspDebugScreenPrintf("X: SELECIONAR  START: SAIR");
 
             if (pad.Buttons & PSP_CTRL_UP) {
                 selecionado = (selecionado + 4) % 5;
@@ -80,17 +98,18 @@ int main(void) {
                 sair = 1;
             }
         } else {
-            pspDebugScreenSetXY(4, 10);
+            /* Telas secundarias */
+            pspDebugScreenSetTextColor(SELECT_COLOR);
+            pspDebugScreenSetXY(7, 11);
             pspDebugScreenPrintf("%s", opcoes[tela - 1]);
 
-            pspDebugScreenSetXY(3, 13);
-            pspDebugScreenPrintf("Funcao sera adicionada");
-
+            pspDebugScreenSetTextColor(TEXT_COLOR);
             pspDebugScreenSetXY(3, 14);
-            pspDebugScreenPrintf("nas proximas versoes.");
+            pspDebugScreenPrintf("AREA EM DESENVOLVIMENTO");
 
-            pspDebugScreenSetXY(3, 18);
-            pspDebugScreenPrintf("CIRCULO: voltar");
+            pspDebugScreenSetTextColor(MUTED_COLOR);
+            pspDebugScreenSetXY(5, 19);
+            pspDebugScreenPrintf("CIRCULO: VOLTAR");
 
             if (pad.Buttons & PSP_CTRL_CIRCLE) {
                 tela = 0;
