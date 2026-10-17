@@ -2,9 +2,8 @@
 TARGET = hkbmenu
 OBJS = src/main.o
 
+CC = psp-gcc
 CFLAGS = -O2 -G0 -Wall
-CXXFLAGS = $(CFLAGS)
-ASFLAGS = $(CFLAGS)
 
 BUILD_PRX = 1
 EXTRA_TARGETS = EBOOT.PBP
