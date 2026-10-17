@@ -1,5 +1,5 @@
 
-TARGET = HollowKnight
+TARGET = DarkBot
 BUILD_PRX = 1
 
 OBJS = \
