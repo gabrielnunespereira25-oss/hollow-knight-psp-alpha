@@ -1,0 +1,23 @@
+
+name: Build PSP Menu
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: pspdev/pspdev:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compilar menu
+        run: make
+
+      - name: Disponibilizar EBOOT
+        uses: actions/upload-artifact@v4
+        with:
+          name: hk-beta-menu
+          path: EBOOT.PBP
