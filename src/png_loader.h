@@ -8,8 +8,7 @@ typedef struct {
     unsigned int *pixels;
 } PngImage;
 
-int png_image_load(const char *path, PngImage *image);
-void png_image_free(PngImage *image);
+int psp_png_load(const char *path, PngImage *image);
+void psp_png_free(PngImage *image);
 
 #endif
-
