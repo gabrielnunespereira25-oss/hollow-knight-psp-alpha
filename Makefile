@@ -1,10 +1,7 @@
-
-TARGET = DarkBot
+TARGET = DarkBotTest
 BUILD_PRX = 1
 
-OBJS = \
-    src/main.o \
-    src/png_loader.o
+OBJS = src/main.o
 
 INCDIR =
 CFLAGS = -O2 -G0 -Wall
@@ -13,10 +10,10 @@ ASFLAGS = $(CFLAGS)
 
 LIBDIR =
 LDFLAGS =
-LIBS = -lpspgu -lpspgum -lpng -lz -lm
+LIBS = -lpspgu -lpspdisplay
 
 EXTRA_TARGETS = EBOOT.PBP
-PSP_EBOOT_TITLE = Dark Bot
+PSP_EBOOT_TITLE = Dark Bot Teste
 
 PSPSDK = $(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak
