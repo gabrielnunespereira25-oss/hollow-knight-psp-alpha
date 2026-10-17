@@ -5,181 +5,181 @@
 #include <pspdisplay.h>
 #include <pspgu.h>
 #include <pspge.h>
-#include <stdio.h>
-#include <string.h>
 
-PSP_MODULE_INFO("Hollow Knight PSP Beta", 0, 1, 0);
+PSP_MODULE_INFO("Dark Bot", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
+
+#define WHITE 0xFFFFFFFF
+#define GOLD  0xFFFFD080
+#define GRAY  0xFFAAAAAA
 
 #define SCREEN_W 480
 #define SCREEN_H 272
-#define FLOOR_Y 235
-
-typedef enum {
-    IDLE,
-    WALK,
-    RUN,
-    JUMP,
-    FALL,
-    LAND,
-    ATTACK,
-    HIT,
-    DIE
-} Animation;
 
 typedef struct {
-    float x, y, vy;
+    float x, y;
+    float vx, vy;
     int grounded;
-    int direction;
-    Animation animation;
-    int frame;
-    int frame_timer;
 } Player;
-
-static Player player = {80, FLOOR_Y - 48, 0, 1, 1, IDLE, 0, 0};
-
-static const char *idle_frames[] = {
-    "ativos/parado/idle_00.png",
-    "ativos/parado/idle_01.png",
-    "ativos/parado/idle_02.png",
-    "ativos/parado/idle_03.png"
-};
-
-static const char *walk_frames[] = {
-    "ativos/andar/caminhada_00.png",
-    "ativos/andar/caminhada_01.png",
-    "ativos/andar/caminhada_02.png",
-    "ativos/andar/caminhada_03.png",
-    "ativos/andar/caminhada_04.png",
-    "ativos/andar/caminhada_05.png"
-};
-
-static const char *run_frames[] = {
-    "ativos/correr/run_00.png",
-    "ativos/correr/run_01.png",
-    "ativos/correr/run_02.png",
-    "ativos/correr/run_03.png",
-    "ativos/correr/run_04.png",
-    "ativos/correr/run_05.png"
-};
-
-static const char *jump_frames[] = {
-    "ativos/pular/jump_00.png",
-    "ativos/pular/jump_01.png",
-    "ativos/pular/jump_02.png",
-    "ativos/pular/jump_03.png",
-    "ativos/pular/jump_04.png",
-    "ativos/pular/jump_05.png"
-};
-
-static const char *hit_frames[] = {
-    "ativos/bater/hit_00.png",
-    "ativos/bater/hit_01.png",
-    "ativos/bater/hit_02.png",
-    "ativos/bater/hit_03.png"
-};
-
-static void set_animation(Animation animation)
-{
-    if (player.animation != animation) {
-        player.animation = animation;
-        player.frame = 0;
-        player.frame_timer = 0;
-    }
-}
-
-static void update_player(SceCtrlData *pad)
-{
-    unsigned int b = pad->Buttons;
-    int moving = 0;
-
-    if (b & PSP_CTRL_LEFT) {
-        player.x -= 2.0f;
-        player.direction = -1;
-        moving = 1;
-    }
-
-    if (b & PSP_CTRL_RIGHT) {
-        player.x += 2.0f;
-        player.direction = 1;
-        moving = 1;
-    }
-
-    if (player.x < 0)
-        player.x = 0;
-
-    if (player.x > SCREEN_W - 32)
-        player.x = SCREEN_W - 32;
-
-    if ((b & PSP_CTRL_CROSS) && player.grounded) {
-        player.vy = -7.0f;
-        player.grounded = 0;
-        set_animation(JUMP);
-    }
-
-    player.vy += 0.30f;
-    player.y += player.vy;
-
-    if (player.y + 48 >= FLOOR_Y) {
-        player.y = FLOOR_Y - 48;
-        player.vy = 0;
-        player.grounded = 1;
-    }
-
-    if (b & PSP_CTRL_SQUARE)
-        set_animation(ATTACK);
-    else if (!player.grounded)
-        set_animation(player.vy < 0 ? JUMP : FALL);
-    else if (moving)
-        set_animation(WALK);
-    else
-        set_animation(IDLE);
-
-    player.frame_timer++;
-
-    if (player.frame_timer >= 8) {
-        player.frame_timer = 0;
-        player.frame++;
-    }
-}
-
-static void draw_placeholder(void)
-{
-    /*
-     * PONTO DE INTEGRACAO:
-     * Aqui entra o carregador PNG + textura PSP GU.
-     *
-     * Ainda não desenha os arquivos PNG.
-     * Este retângulo serve apenas como marcador temporário.
-     */
-    (void)idle_frames;
-    (void)walk_frames;
-    (void)run_frames;
-    (void)jump_frames;
-    (void)hit_frames;
-}
 
 int main(void)
 {
-    SceCtrlData pad;
+    pspDebugScreenInit();
 
     sceCtrlSetSamplingCycle(0);
     sceCtrlSetSamplingMode(PSP_CTRL_MODE_DIGITAL);
-    pspDebugScreenInit();
 
-    pspDebugScreenPrintf("HOLLOW KNIGHT PSP BETA\n");
-    pspDebugScreenPrintf("Prototipo de animacao\n");
-    pspDebugScreenPrintf("Esquerda/Direita: mover\n");
-    pspDebugScreenPrintf("X: pular | Quadrado: atacar\n");
+    int selecionado = 0;
+    int tela = 0;
+    int sair = 0;
+    unsigned int anterior = 0;
 
-    while (1) {
+    Player player = {220.0f, 180.0f, 0.0f, 0.0f, 1};
+
+    const char *opcoes[] = {
+        "NOVO JOGO", "CONTINUAR", "OPCOES", "CREDITOS", "SAIR"
+    };
+
+    while (!sair) {
+        SceCtrlData pad;
         sceCtrlReadBufferPositive(&pad, 1);
 
-        update_player(&pad);
-        draw_placeholder();
+        unsigned int pressionado = pad.Buttons & ~anterior;
+        anterior = pad.Buttons;
+
+        pspDebugScreenClear();
+
+        if (tela == 0) {
+            pspDebugScreenSetTextColor(GRAY);
+            pspDebugScreenSetXY(5, 2);
+            pspDebugScreenPrintf("DARK BOT / PSP");
+
+            pspDebugScreenSetTextColor(WHITE);
+            pspDebugScreenSetXY(14, 5);
+            pspDebugScreenPrintf("DARK BOT");
+
+            pspDebugScreenSetTextColor(GOLD);
+            pspDebugScreenSetXY(13, 7);
+            pspDebugScreenPrintf("BETA EDITION");
+
+            for (int i = 0; i < 5; i++) {
+                pspDebugScreenSetXY(12, 10 + i * 2);
+                pspDebugScreenSetTextColor(
+                    i == selecionado ? GOLD : WHITE
+                );
+                pspDebugScreenPrintf("%s %s",
+                    i == selecionado ? ">" : " ",
+                    opcoes[i]);
+            }
+
+            pspDebugScreenSetTextColor(GRAY);
+            pspDebugScreenSetXY(3, 22);
+            pspDebugScreenPrintf("CIMA/BAIXO: NAVEGAR  X: OK");
+
+            if (pressionado & PSP_CTRL_UP)
+                selecionado = (selecionado + 4) % 5;
+
+            if (pressionado & PSP_CTRL_DOWN)
+                selecionado = (selecionado + 1) % 5;
+
+            if (pressionado & PSP_CTRL_CROSS) {
+                if (selecionado == 0 || selecionado == 1) {
+                    player.x = 220.0f;
+                    player.y = 180.0f;
+                    player.vx = 0.0f;
+                    player.vy = 0.0f;
+                    player.grounded = 1;
+                    tela = 1;
+                } else if (selecionado == 4) {
+                    sair = 1;
+                } else {
+                    tela = selecionado + 1;
+                }
+            }
+
+            if (pressionado & PSP_CTRL_START)
+                sair = 1;
+
+        } else if (tela == 1) {
+            /* Movimento horizontal */
+            player.vx = 0.0f;
+
+            if (pad.Buttons & PSP_CTRL_LEFT)
+                player.vx = -3.0f;
+
+            if (pad.Buttons & PSP_CTRL_RIGHT)
+                player.vx = 3.0f;
+
+            /* Pulo com X */
+            if ((pressionado & PSP_CTRL_CROSS) && player.grounded) {
+                player.vy = -8.0f;
+                player.grounded = 0;
+            }
+
+            /* Gravidade */
+            player.vy += 0.35f;
+            if (player.vy > 7.0f)
+                player.vy = 7.0f;
+
+            player.x += player.vx;
+            player.y += player.vy;
+
+            /* Limites da tela */
+            if (player.x < 0)
+                player.x = 0;
+
+            if (player.x > SCREEN_W - 16)
+                player.x = SCREEN_W - 16;
+
+            /* Chão de teste */
+            if (player.y >= 220.0f) {
+                player.y = 220.0f;
+                player.vy = 0.0f;
+                player.grounded = 1;
+            }
+
+            pspDebugScreenSetTextColor(WHITE);
+            pspDebugScreenSetXY(2, 1);
+            pspDebugScreenPrintf("DARK BOT - TESTE DE MOVIMENTO");
+
+            pspDebugScreenSetXY(2, 2);
+            pspDebugScreenPrintf("ESQ/DIR: ANDAR  X: PULAR");
+
+            pspDebugScreenSetXY(2, 3);
+            pspDebugScreenPrintf("CIRCULO: MENU");
+
+            /* Representacao temporaria do personagem */
+            pspDebugScreenSetTextColor(GOLD);
+            pspDebugScreenSetXY((int)(player.x / 8),
+                                (int)(player.y / 8));
+            pspDebugScreenPrintf("[]");
+
+            pspDebugScreenSetTextColor(GRAY);
+            pspDebugScreenSetXY(0, 28);
+            pspDebugScreenPrintf(
+                "----------------------------------------------"
+            );
+
+            if (pressionado & PSP_CTRL_CIRCLE)
+                tela = 0;
+
+        } else {
+            pspDebugScreenSetTextColor(GOLD);
+            pspDebugScreenSetXY(10, 10);
+            pspDebugScreenPrintf("%s", opcoes[tela - 1]);
+
+            pspDebugScreenSetTextColor(WHITE);
+            pspDebugScreenSetXY(5, 13);
+            pspDebugScreenPrintf("AREA EM DESENVOLVIMENTO");
+
+            pspDebugScreenSetXY(5, 18);
+            pspDebugScreenPrintf("CIRCULO: VOLTAR");
+
+            if (pressionado & PSP_CTRL_CIRCLE)
+                tela = 0;
+        }
 
         sceDisplayWaitVblankStart();
-        sceKernelDelayThread(16000);
     }
 
     sceKernelExitGame();
