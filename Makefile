@@ -1,16 +1,22 @@
 
-TARGET = hkbmenu
-OBJS = src/main.o
+TARGET = HollowKnight
+BUILD_PRX = 1
+
+OBJS = \
+    src/main.o \
+    src/png_loader.o
 
 INCDIR =
 CFLAGS = -O2 -G0 -Wall
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS)
 
-LIBS = -lpspgu -lpspgum -lpspdebug -lpspdisplay -lpspctrl -lpspkernel
+LIBDIR =
+LDFLAGS =
+LIBS = -lpspgu -lpspgum -lpng -lz -lm
 
-BUILD_PRX = 1
 EXTRA_TARGETS = EBOOT.PBP
+PSP_EBOOT_TITLE = Hollow Knight PSP Beta
 
 PSPSDK = $(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak
