@@ -1,34 +1,42 @@
 
-name: Build PSP Menu
+name: Hollow Knight PSP Beta
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main, master]
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: pspdev/pspdev:latest
+    container:
+      image: pspdev/pspdev:latest
 
     steps:
-      - name: Baixar codigo
+      - name: Baixar projeto
         uses: actions/checkout@v4
 
       - name: Verificar arquivos
         run: |
-          echo "=== RAIZ DO PROJETO ==="
+          echo "=== PROJETO ==="
           ls -la
-          echo "=== PASTA SRC ==="
-          ls -la src || true
-          echo "=== LOCALIZAR MAIN.C ==="
-          find . -iname 'main.c' -print
+          echo "=== CODIGO ==="
+          ls -la src
+          echo "=== IMAGEM DE FUNDO ==="
+          if [ -f assets/background.jpg ]; then
+            echo "JPG encontrado"
+          else
+            echo "JPG nao encontrado"
+          fi
 
-      - name: Compilar menu
-        run: make
+      - name: Compilar
+        run: |
+          make clean || true
+          make
 
-      - name: Enviar EBOOT
+      - name: Publicar EBOOT
         uses: actions/upload-artifact@v4
         with:
-          name: hk-beta-menu
+          name: hollow-knight-psp-beta
           path: EBOOT.PBP
+          if-no-files-found: error
