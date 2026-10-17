@@ -1,14 +1,18 @@
 
-name: Hollow Knight PSP Beta
+name: Build Dark Bot PSP
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     container:
       image: pspdev/pspdev:latest
 
@@ -22,21 +26,24 @@ jobs:
           ls -la
           echo "=== CODIGO ==="
           ls -la src
-          echo "=== IMAGEM DE FUNDO ==="
-          if [ -f assets/background.jpg ]; then
-            echo "JPG encontrado"
-          else
-            echo "JPG nao encontrado"
-          fi
+          echo "=== MAKEFILE ==="
+          test -f Makefile
+          echo "=== PNG LOADER ==="
+          test -f src/png_loader.c
+          test -f src/png_loader.h
+          echo "Verificacao concluida."
 
-      - name: Compilar
+      - name: Compilar Dark Bot
         run: |
           make clean || true
           make
+          test -f EBOOT.PBP
+          ls -lh EBOOT.PBP
 
-      - name: Publicar EBOOT
+      - name: Publicar Dark Bot
         uses: actions/upload-artifact@v4
         with:
-          name: hollow-knight-psp-beta
+          name: dark-bot-psp
           path: EBOOT.PBP
           if-no-files-found: error
+          retention-days: 7
